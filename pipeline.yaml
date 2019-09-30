@@ -1,0 +1,397 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Continuous deployment infrastructure for CodeBuild Webhooks
+
+Parameters:
+  CodeCommitRepoName:
+    Description: A CodeCommit repository that contains the application code. Must be in same region as this stack.
+    Type: String
+    Default: codebuild-webhooks
+  StackName:
+    Description: CloudFormation Stack Name maanged by this pipeline
+    Type: String
+    Default: codebuild-webhooks
+  SSMKeyId:
+    Description: Key used to encrypt SSM parameters
+    Type: String
+
+Resources:
+  CloudFormationTrustRole:
+    Description: Creating service role in IAM for AWS CloudFormation
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - cloudformation.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - iam:CreateRole
+            - iam:AttachRolePolicy
+            - iam:PutRolePolicy
+            - iam:PassRole
+            - iam:DetachRolePolicy
+            - iam:ListRolePolicies
+            - iam:GetRole
+            - iam:DeleteRolePolicy
+            - iam:UpdateRoleDescription
+            - iam:ListRoles
+            - iam:DeleteRole
+            - iam:GetRolePolicy
+            - iam:CreateInstanceProfile
+            - iam:AddRoleToInstanceProfile
+            - iam:DeleteInstanceProfile
+            - iam:GetInstanceProfile
+            - iam:ListInstanceProfiles
+            - iam:ListInstanceProfilesForRole
+            - iam:RemoveRoleFromInstanceProfile
+            Effect: Allow
+            Resource: "*"
+          - Action:
+            - ssm:GetParameters
+            Effect: Allow
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - 'cloudformation:CreateStack'
+            - 'cloudformation:DescribeStacks'
+            - 'cloudformation:DescribeChangeSet'
+            - 'cloudformation:ValidateTemplate'
+            Resource: "*"
+          - Effect: Allow
+            Action:
+            - 'cloudformation:DeleteStack'
+            - 'cloudformation:UpdateStack'
+            - 'cloudformation:CreateChangeSet'
+            - 'cloudformation:DeleteChangeSet'
+            - 'cloudformation:ExecuteChangeSet'
+            - 'cloudformation:SetStackPolicy'
+            - 'cloudformation:ValidateTemplate'
+            Resource: "*"
+          # Stack specific permissions
+          - Effect: Allow
+            Action:
+            - 'dynamodb:*'
+            - 'lambda:*'
+            - 'events:*'
+            - 's3:*'
+            Resource: "*"
+        PolicyName: !Sub '${AWS::StackName}-CloudFormationRolePolicy'
+    Type: AWS::IAM::Role
+
+  CodeBuildProject:
+    Properties:
+      Name: !Ref StackName
+      Artifacts:
+        Type: CODEPIPELINE
+      Cache:
+        Location: !Ref 'CacheBucket'
+        Type: S3
+      Description: !Sub 'CodeBuild Project for ${AWS::StackName}'
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0	
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+        - Name: TEMP_BUCKET
+          Type: PLAINTEXT
+          Value: !Ref ArtifactsBucket
+      ServiceRole: !Ref 'CodeBuildRole'
+      Source:
+        Type: CODEPIPELINE
+    Type: AWS::CodeBuild::Project
+
+  CodeBuildRole:
+    Description: Creating service role in IAM for AWS CodeBuild
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:GetObjectVersion
+            Effect: Allow
+            Resource:
+            - !Sub 'arn:aws:s3:::${ArtifactsBucket}' 
+            - !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+            - !Sub 'arn:aws:s3:::${CacheBucket}' 
+            - !Sub 'arn:aws:s3:::${CacheBucket}/*'
+          - Action:
+            - codecommit:GitPull
+            Effect: Allow
+            Resource:
+            - !Sub arn:${AWS::Partition}:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepoName}
+          - Action:
+            - kms:GenerateDataKey*
+            - kms:Encrypt
+            - kms:Decrypt
+            Effect: Allow
+            Resource:
+            - !Sub arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3
+        PolicyName: !Sub '${AWS::StackName}-CodeBuildRolePolicy'
+    Type: AWS::IAM::Role
+
+  CodePipelineTrustRole:
+    Description: Creating service role in IAM for AWS CodePipeline
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Sid: 1
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:GetBucketVersioning
+            - s3:PutObject
+            Effect: Allow
+            Resource:
+            - !Sub 'arn:aws:s3:::${ArtifactsBucket}' 
+            - !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+          - Action:
+            - codecommit:CancelUploadArchive
+            - codecommit:GetBranch
+            - codecommit:GetCommit
+            - codecommit:GetUploadArchiveStatus
+            - codecommit:UploadArchive
+            Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepoName}
+          - Action:
+            - codebuild:StartBuild
+            - codebuild:BatchGetBuilds
+            - codebuild:StopBuild
+            Effect: Allow
+            Resource:
+            - !GetAtt 'CodeBuildProject.Arn'
+          - Action:
+            - cloudformation:DescribeStacks
+            - cloudformation:DescribeChangeSet
+            - cloudformation:CreateChangeSet
+            - cloudformation:DeleteChangeSet
+            - cloudformation:ExecuteChangeSet
+            Effect: Allow
+            Resource:
+            - !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${StackName}/*'
+          - Action:
+            - iam:PassRole
+            Effect: Allow
+            Resource:
+            - !GetAtt CloudFormationTrustRole.Arn
+        PolicyName: !Sub '${AWS::StackName}-CodePipelineRolePolicy'
+    Type: AWS::IAM::Role
+
+  ReleasePipeline:
+    DependsOn:
+    - CodePipelineTrustRole
+    - ArtifactsBucket
+    - CodeBuildProject
+    - CloudFormationTrustRole
+    Description: Creating a deployment pipeline for the project in AWS CodePipeline
+    Properties:
+      ArtifactStore:
+        Location: !Ref 'ArtifactsBucket'
+        Type: S3
+      Name: !Ref 'AWS::StackName'
+      RoleArn: !GetAtt CodePipelineTrustRole.Arn
+      Stages:
+      - Name: Source
+        Actions:
+        - ActionTypeId:
+            Category: Source
+            Owner: AWS
+            Provider: CodeCommit
+            Version: 1
+          Configuration:
+            BranchName: master
+            PollForSourceChanges: false
+            RepositoryName: !Ref CodeCommitRepoName
+          InputArtifacts: []
+          Name: ApplicationSource
+          OutputArtifacts:
+          - Name: SourceArtifact
+          RunOrder: 1
+      - Name: Build
+        Actions:
+        - ActionTypeId:
+            Category: Build
+            Owner: AWS
+            Provider: CodeBuild
+            Version: 1
+          Configuration:
+            ProjectName: !Ref CodeBuildProject
+          InputArtifacts:
+          - Name: SourceArtifact
+          Name: Build
+          OutputArtifacts:
+          - Name: BuildArtifact
+          RunOrder: 1
+      - Name: Deploy
+        Actions:
+        - ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CHANGE_SET_REPLACE
+            Capabilities: CAPABILITY_IAM
+            ChangeSetName: update-stack-changeset
+            ParameterOverrides: !Sub |
+              {
+                "SSMKeyId" : "${SSMKeyId}"
+              }
+            RoleArn: !GetAtt CloudFormationTrustRole.Arn
+            StackName: !Ref StackName
+            TemplatePath: BuildArtifact::packaged.yaml
+          InputArtifacts:
+          - Name: BuildArtifact
+          Name: GenerateChangeSet
+          OutputArtifacts: []
+          RunOrder: 1
+        - ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: 1
+          Configuration:
+            ActionMode: CHANGE_SET_EXECUTE
+            ChangeSetName: update-stack-changeset
+            StackName: !Ref StackName
+          InputArtifacts: []
+          Name: ExecuteChangeSet
+          OutputArtifacts: []
+          RunOrder: 2
+    Type: AWS::CodePipeline::Pipeline
+
+  ArtifactBucketPolicy:
+    Description: Setting Amazon S3 bucket policy for AWS CodePipeline access
+    Properties:
+      Bucket: !Ref 'ArtifactsBucket'
+      PolicyDocument:
+        Id: SSEAndSSLPolicy
+        Statement:
+        - Action:
+          - s3:GetObject
+          - s3:GetObjectVersion
+          - s3:GetBucketVersioning
+          Condition:
+            Bool:
+              aws:SecureTransport: false
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt CodePipelineTrustRole.Arn
+            - !GetAtt CodeBuildRole.Arn
+            - !GetAtt CloudFormationTrustRole.Arn
+          Resource:
+          - !Sub 'arn:aws:s3:::${ArtifactsBucket}' 
+          - !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+          Sid: WhitelistedGet
+        - Action:
+          - s3:PutObject
+          Effect: Allow
+          Principal:
+            AWS:
+            - !GetAtt CodePipelineTrustRole.Arn
+            - !GetAtt CodeBuildRole.Arn
+          Resource:
+          - !Sub 'arn:aws:s3:::${ArtifactsBucket}' 
+          - !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+          Sid: WhitelistedPut
+        Version: 2012-10-17
+    Type: AWS::S3::BucketPolicy
+
+  ArtifactsBucket:
+    Description: Creating Amazon S3 bucket for AWS CodePipeline and CodeBuild artifacts
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+        - Id: ExpiryRule
+          Status: Enabled
+          ExpirationInDays: 14
+    Type: AWS::S3::Bucket
+
+  CacheBucket:
+    Description: Creating Amazon S3 bucket for CodeBuild caching
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 30
+            Status: Enabled
+    Type: AWS::S3::Bucket
+
+  SourceEvent:
+    Properties:
+      Description: Rule for Amazon CloudWatch Events to detect changes to the source repository and trigger pipeline execution
+      EventPattern:
+        detail:
+          event:
+          - referenceCreated
+          - referenceUpdated
+          referenceName:
+          - master
+          referenceType:
+          - branch
+        detail-type:
+        - CodeCommit Repository State Change
+        resources:
+        - !Sub arn:${AWS::Partition}:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepoName}
+        source:
+        - aws.codecommit
+      Name: !Sub ${AWS::StackName}-SourceEvent
+      State: ENABLED
+      Targets:
+      - Arn: !Sub arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:${AWS::StackName}
+        Id: ProjectPipelineTarget
+        RoleArn: !GetAtt 'SourceEventRole.Arn'
+    Type: AWS::Events::Rule
+
+  SourceEventRole:
+    Description: IAM role to allow Amazon CloudWatch Events to trigger AWS CodePipeline execution
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - events.amazonaws.com
+          Sid: 1
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - codepipeline:StartPipelineExecution
+            Effect: Allow
+            Resource:
+            - !Sub arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:${AWS::StackName}
+        PolicyName: !Sub ${AWS::StackName}-CloudWatchEventPolicy
+    Type: AWS::IAM::Role

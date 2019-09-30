@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+  pre_build:
+    commands:
+      - pip install -r requirements.txt
+  build:
+    commands:
+      - find lambdas/ -iname "*.py" | xargs pylint --rcfile .pylintrc
+      - python -m unittest discover tests
+      - pip install -r prod.txt -t lambdas/
+      - aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $TEMP_BUCKET
+artifacts:
+  files:
+    - 'packaged.yaml'
+cache:
+  paths:
+    - '/root/.cache/pip'

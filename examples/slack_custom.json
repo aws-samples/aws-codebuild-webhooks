@@ -1,0 +1,6 @@
+{
+  "project": {"S": "your-codebuild-project-name"},
+  "hook_url_param_name": {"S": "/webhooks/your-slack-webhook-url-param"},
+  "statuses": {"L": [{"S": "SUCCEEDED"}, {"S": "FAILED"}]},
+  "template": {"S": "{ \"username\": \"webhookbot\",\"text\": \"*$PROJECT* reached status $STATUS\",\"icon_emoji\": \":building_construction:\"}"}
+}

@@ -1,0 +1,5 @@
+{
+  "project": {"S": "your-codebuild-project-name"},
+  "hook_url_param_name": {"S": "/webhooks/your-slack-webhook-url-param"},
+  "statuses": {"L": [{"S": "SUCCEEDED"}, {"S": "FAILED"}]}
+}

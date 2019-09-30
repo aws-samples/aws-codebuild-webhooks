@@ -1,0 +1,6 @@
+{
+  "project": {"S": "your-codebuild-project-name"},
+  "hook_url_param_name": {"S": "/webhooks/your-chime-webhook-url-param"},
+  "statuses": {"L": [{"S": "SUCCEEDED"}, {"S": "FAILED"}]},
+  "template": {"S": "{\"Content\":\"$PROJECT build $STATUS :+1: \"}"}
+}

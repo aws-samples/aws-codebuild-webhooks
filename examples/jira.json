@@ -1,0 +1,7 @@
+{
+  "project": {"S": "your-codebuild-project-name"},
+  "hook_url_param_name": {"S": "/webhooks/your-jira-webhook-issues-url-param"},
+  "hook_headers_param_name": {"S": "/webhooks/your-jira-basic-auth-headers-param"},
+  "statuses": {"L": [{"S": "FAILED"}]},
+  "template": {"S": "{\"fields\": {\"project\":{\"id\": \"10000\"},\"summary\": \"$PROJECT build failing\",\"description\": \"AWS CodeBuild project $PROJECT latest build $STATUS\",\"issuetype\":{\"id\": \"10004\"}}}"}
+}
