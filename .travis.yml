@@ -1,0 +1,42 @@
+language: python
+
+python: 
+  - "3.7"
+
+before_script:
+  - python --version
+  - pip install -r requirements.txt
+
+script:
+  - cfn-lint cfn.template
+  - pylint --rcfile .pylintrc lambdas/index.py
+  - python -m unittest discover tests
+  - pip install -r prod.txt -t lambdas/
+
+before_deploy:
+  - LATEST_VERSION="$(git describe --abbrev=0 --tags 2> /dev/null || echo 'v0')"
+  - NEXT_VERSION="v$((${LATEST_VERSION##*[^0-9]} + 1 ))"
+  - export VERSION=${TRAVIS_TAG:-$NEXT_VERSION}
+  - echo "Deploying version $VERSION"
+  - zip -R $VERSION.zip lambdas template.yaml
+  - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
+
+deploy:
+  - provider: releases
+    api_key: 
+      secure: TODO
+    file: $VERSION.zip
+    skip_cleanup: true
+    on:
+      branch: master
+      condition: type != pull_request
+  - provider: script
+    script: aws s3 cp ./$VERSION.zip s3://$CFN_BUCKET/aws-codebuild-webhooks/$VERSION/aws-codebuild-webhooks.zip
+    skip_cleanup: true
+    on:
+      tags: true
+
+notifications:
+  email: false
+
+cache: pip

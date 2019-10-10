@@ -1,3 +1,4 @@
 -r prod.txt
 pylint==2.4.1
 mock==3.0.5
+cfn-lint==0.24.4
