@@ -109,6 +109,10 @@ python -m unittest discover tests
 [Slack's Incoming Webhook Instructions]: https://slack.com/intl/en-gb/help/articles/115005265063
 [Jira's Auth Instructions]: https://developer.atlassian.com/cloud/jira/platform/jira-rest-api-basic-authentication/#supplying-basic-auth-headers
 
+## Contributing
+
+Contributions are more than welcome. Please read the [code of conduct](CODE_OF_CONDUCT.md) and the [contributing guidelines](CONTRIBUTING.md).
+
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
