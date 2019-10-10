@@ -8,7 +8,7 @@ before_script:
   - pip install -r requirements.txt
 
 script:
-  - cfn-lint cfn.template
+  - cfn-lint template.yaml
   - pylint --rcfile .pylintrc lambdas/index.py
   - python -m unittest discover tests
   - pip install -r prod.txt -t lambdas/
@@ -18,7 +18,7 @@ before_deploy:
   - NEXT_VERSION="v$((${LATEST_VERSION##*[^0-9]} + 1 ))"
   - export VERSION=${TRAVIS_TAG:-$NEXT_VERSION}
   - echo "Deploying version $VERSION"
-  - zip -R $VERSION.zip lambdas template.yaml
+  - zip -R $VERSION.zip lambdas/ template.yaml cfn-publish.config
   - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
 
 deploy:
