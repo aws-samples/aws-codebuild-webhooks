@@ -20,19 +20,6 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_IAM
 ```
 
-A `pipeline.yaml` template is provided which creates a CI/CD pipeline for this repo. This can be
-deployed via the CLI:
-
-```
-SSM_KEY=$(aws kms describe-key --key-id alias/aws/ssm --query KeyMetadata.KeyId --output text)
-
-aws cloudformation create-stack \
-  --stack-name webhook-pipeline \
-  --template-body file://pipeline.yaml \
-  --parameters ParameterKey=SSMKeyId,ParameterValue=$SSM_KEY \
-  --capabilities CAPABILITY_IAM
-```
-
 ## Registering a Webhook
 To register a webhook, you need to create a new item in the DDB table with the following keys:
 
