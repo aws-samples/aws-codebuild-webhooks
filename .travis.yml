@@ -18,7 +18,7 @@ before_deploy:
   - NEXT_VERSION="v$((${LATEST_VERSION##*[^0-9]} + 1 ))"
   - export VERSION=${TRAVIS_TAG:-$NEXT_VERSION}
   - echo "Deploying version $VERSION"
-  - zip -R $VERSION.zip lambdas/ template.yaml cfn-publish.config
+  - zip -r $VERSION.zip lambdas/ template.yaml cfn-publish.config
   - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
 
 deploy:
