@@ -22,6 +22,14 @@ before_deploy:
   - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
 
 deploy:
+  - provider: releases
+    api_key:
+      secure: qSzOSbVbrPf+FOf8HP1fhL1em4+yW3mP3Ul5GYyd0Od4wFEjDR0qgBTjP3ZYMuVU7HQvSYISYrpUZQfLJmaZXvV7gt68DEFNoznbkylMDlAryCQUeP4PjAuGyFTCeXbUS4uUtDTG7L6KZRISwj9GT6JYCOyexndewQhtmHhmpFKTAObC4m0YcieX2tm4TJ03PB+a13ZYABAUpsZ/thOCWkOSoo+XOoQWakzUOHaHj/rqGL0IA3wUctsXV6UH8nAeWmsMLet+18UPMN38radh2+Ks2s9/6uBft2xheqmcNJyRCoZ90Cdah8CY2GEZcs+XbdSKiUgPyu0R0C7Z6R+lqkYsU3FLf9jLQm4lsLV7W9YKoAM06QaBV5zueN3S0kzQZFcI2I2rV+E5roIoU0gvSzPE7iy1TmzIZZHCSInoLuBBbD1L2P+Qq8r6M0nRvtNX+w8E14fEuB3iLUDgzupDPlOo5nGz9mRJDH1hYnS/C9Xl65RHoOT4CkSBqkBUCN0qBu4Ad97ka9nqMev7iIbh9Ad3SpHECRiKH7IrFcuwpVROCdWb0MIM/H2EZsWFGSTElKPFSyMochDyzf39a1ItcB8HifGUQb6dM+PCf+3JjRL15FDIfivcT1Sfz0PZPzcjpH64BjM0jARHbun/KhPSrV322npfG5cGMUShHBy6GkI=
+    file: $VERSION.zip
+    skip_cleanup: true
+    on:
+      branch: master
+      condition: type != pull_request
   - provider: script
     script: aws s3 cp ./$VERSION.zip s3://$CFN_BUCKET/aws-codebuild-webhooks/$VERSION/aws-codebuild-webhooks.zip
     skip_cleanup: true
