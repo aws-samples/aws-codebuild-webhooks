@@ -1,10 +1,51 @@
 # CodeBuild Webhooks
 
-A solution for CodeBuild custom webhook notifications
+A solution for CodeBuild custom webhook notifications. Enables you to configure
+a list of HTTP endpoints which should be notified of CodeBuild state changes
+on a per CodeBuild project basis. 
+
+[![Build Status](https://travis-ci.org/aws-samples/aws-codebuild-webhooks.svg?branch=master)](https://travis-ci.org/aws-samples/aws-codebuild-webhooks)
 
 ## Deployment
 
-Deploy using CloudFormation via the CLI
+The easiest way to deploy the solution is using the relevant Launch Stack button
+below. When launching the stack you will need to provide the ID of the
+KMS Key you'll be using to encrypt `SecureString` parameters in SSM. To use the
+default AWS Managed Key for SSM, run the following AWS CLI command to get the
+Key ID:
+
+```bash
+aws kms describe-key --key-id alias/aws/ssm --query KeyMetadata.KeyId --output text
+```
+
+|Region|Launch Template|
+|------|---------------|
+|**US East (N. Virginia)** (us-east-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-us-east-1.s3.us-east-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**US East (Ohio)** (us-east-2) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-us-east-2.s3.us-east-2.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**US West (Oregon)** (us-west-2) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-us-west-2.s3.us-west-2.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**EU (Ireland)** (eu-west-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-eu-west-1.s3.eu-west-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Asia Pacific (Tokyo)** (ap-northeast-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ap-northeast-1.s3.ap-northeast-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Asia Pacific (Sydney)** (ap-southeast-2) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ap-southeast-2.s3.ap-southeast-2.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+
+<details>
+  <summary>More regions</summary>
+  
+|Region|Launch Template|
+|------|---------------|
+|**US West (N. California)** (us-west-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-us-west-1.s3.us-west-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Asia Pacific (Hong Kong)** (ap-east-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-east-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ap-east-1.s3.ap-east-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Asia Pacific (Mumbai)** (ap-south-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ap-south-1.s3.ap-south-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Asia Pacific (Seoul)** (ap-northeast-2) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Asia Pacific (Singapore)** (ap-southeast-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**Canada (Central)** (ca-central-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-ca-central-1.s3.ca-central-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**EU (London)** (eu-west-2) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-eu-west-2.s3.eu-west-2.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**EU (Frankfurt)** (eu-west-3) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-3#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-eu-west-3.s3.eu-west-3.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**EU (Stockholm)** (eu-north-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-north-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-eu-north-1.s3.eu-north-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+|**South America (Sao Paulo)** (sa-east-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=sa-east-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-sa-east-1.s3.sa-east-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
+</details>
+
+If you wish to deploy using CloudFormation via the CLI, clone this repo then
+run the following commands:
 
 ```
 CFN_BUCKET=your-temp-bucket
@@ -21,7 +62,8 @@ aws cloudformation deploy \
 ```
 
 ## Registering a Webhook
-To register a webhook, you need to create a new item in the DDB table with the following keys:
+To register a webhook, you need to create a new item in the CodeBuildWebhooks DDB table,
+created by this solution, with the following keys:
 
 - `project`: The name of the CodeBuild project for which your webhook should be invoked 
 - `hook_url_param_name`: The name of the SSM parameter which contains the URL for your webhook. The
