@@ -6,6 +6,7 @@ Parameters:
   SSMKeyId:
     Description: Key used to encrypt SSM parameters
     Type: String
+    Default: alias/aws/ssm
   SSMPrefix:
     Description: Prefix used for SSM parameters
     Type: String
