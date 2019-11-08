@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Invokes webhooks in response to CodeBuild state changes
+Description: Invokes webhooks in response to CodeBuild state changes (uksb-1q5j83kkh)
 
 Parameters:
   SSMKeyId:
