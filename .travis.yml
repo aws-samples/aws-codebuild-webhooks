@@ -22,14 +22,6 @@ before_deploy:
   - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
 
 deploy:
-  - provider: releases
-    api_key: 
-      secure: TODO
-    file: $VERSION.zip
-    skip_cleanup: true
-    on:
-      branch: master
-      condition: type != pull_request
   - provider: script
     script: aws s3 cp ./$VERSION.zip s3://$CFN_BUCKET/aws-codebuild-webhooks/$VERSION/aws-codebuild-webhooks.zip
     skip_cleanup: true
