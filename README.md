@@ -10,13 +10,9 @@ on a per CodeBuild project basis.
 
 The easiest way to deploy the solution is using the relevant Launch Stack button
 below. When launching the stack you will need to provide the ID of the
-KMS Key you'll be using to encrypt `SecureString` parameters in SSM. To use the
-default AWS Managed Key for SSM, run the following AWS CLI command to get the
-Key ID:
-
-```bash
-aws kms describe-key --key-id alias/aws/ssm --query KeyMetadata.KeyId --output text
-```
+KMS Key you'll be using to encrypt `SecureString` parameters in SSM. By default
+the solution will use the AWS Managed Key for SSM however you can change this
+when deploying if required by supplying a different KMS Key ID.
 
 |Region|Launch Template|
 |------|---------------|
@@ -49,7 +45,6 @@ run the following commands:
 
 ```
 CFN_BUCKET=your-temp-bucket
-SSM_KEY=$(aws kms describe-key --key-id alias/aws/ssm --query KeyMetadata.KeyId --output text)
 virtualenv venv
 source venv/bin/activate
 pip install -r prod.txt -t lambdas/
@@ -57,7 +52,6 @@ aws cloudformation package --output-template-file packaged.yaml --template-file 
 aws cloudformation deploy \
   --stack-name codebuild-webhooks \
   --template-file packaged.yaml \
-  --parameter-overrides SSMKeyId=$SSM_KEY \
   --capabilities CAPABILITY_IAM
 ```
 
