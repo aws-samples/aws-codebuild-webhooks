@@ -20,19 +20,6 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_IAM
 ```
 
-A `pipeline.yaml` template is provided which creates a CI/CD pipeline for this repo. This can be
-deployed via the CLI:
-
-```
-SSM_KEY=$(aws kms describe-key --key-id alias/aws/ssm --query KeyMetadata.KeyId --output text)
-
-aws cloudformation create-stack \
-  --stack-name webhook-pipeline \
-  --template-body file://pipeline.yaml \
-  --parameters ParameterKey=SSMKeyId,ParameterValue=$SSM_KEY \
-  --capabilities CAPABILITY_IAM
-```
-
 ## Registering a Webhook
 To register a webhook, you need to create a new item in the DDB table with the following keys:
 
@@ -51,18 +38,18 @@ for things such as Authorization headers. The param name must be prefixed with `
 ### Example 1: Creating a simple Slack channel webhook
 1. Follow [Slack's Incoming Webhook Instructions] to create a webhook
 2. Create a parameter in SSM containing the Webhook URL generated for you by Slack:
-```
-aws ssm put-parameter --cli-input-json '{
-  "Name": "/webhooks/your-slack-webhook-url",
-  "Value": "url-from-slack",
-  "Type": "SecureString",
-  "Description": "Slack webhook URL for my project"
-}'
-```
+    ```
+    aws ssm put-parameter --cli-input-json '{
+      "Name": "/webhooks/your-slack-webhook-url",
+      "Value": "url-from-slack",
+      "Type": "SecureString",
+      "Description": "Slack webhook URL for my project"
+    }'
+    ```
 3. Create an entry in the DDB webhooks table which uses the default template:
-```
-aws dynamodb put-item --table-name CodeBuildWebhooks --item file://examples/slack_simple.json
-```
+    ```
+    aws dynamodb put-item --table-name CodeBuildWebhooks --item file://examples/slack_simple.json
+     ```
 
 ### Example 2: Creating a customised Slack channel webhook 
 The steps are the same as in [Example 1](#creating-a-simple-slack-channel-webhook) except you
@@ -79,26 +66,28 @@ environment variables from your CodeBuild job will be available for interpolatio
 ### Example 3: Creating a Jira Issues webhook
 1. Follow [Jira's Auth Instructions] to obtain a basic auth header
 2. Create a parameter in SSM containing the Jira Issues API endpoint for your Jira instance:
-```
-aws ssm put-parameter --cli-input-json '{
- "Name": "/webhooks/jira-issues-webhook-url",
- "Value": "https://<my-jira-server>/rest/api/latest/issue/",
- "Type": "String",
- "Description": "Jira issues Rest API URL"
-}‘
-```
+    ```
+    aws ssm put-parameter --cli-input-json '{
+     "Name": "/webhooks/jira-issues-webhook-url",
+     "Value": "https://<my-jira-server>/rest/api/latest/issue/",
+     "Type": "String",
+     "Description": "Jira issues Rest API URL"
+    }'
+    ```
 3. Create a parameter in SSM containing your basic auth headers as a JSON string:
-aws ssm put-parameter --cli-input-json '{
- "Name": "/webhooks/jira-basic-auth-headers",
- "Value": "{\"Authorization\": \"Basic <base64 encoded useremail:api_token>\"}",
- "Type": "SecureString",
- "Description": "Jira basic auth headers for CodeBuild webhooks"
-}‘
+    ```
+    aws ssm put-parameter --cli-input-json '{
+     "Name": "/webhooks/jira-basic-auth-headers",
+     "Value": "{\"Authorization\": \"Basic <base64 encoded useremail:api_token>\"}",
+     "Type": "SecureString",
+     "Description": "Jira basic auth headers for CodeBuild webhooks"
+    }
+    ```
 4. Create an entry in the DDB webhooks table which uses the default template, substituting values
 as required:
-```
-aws dynamodb put-item --table-name CodeBuildWebhooks --item file://examples/jira.json
-```
+    ```
+    aws dynamodb put-item --table-name CodeBuildWebhooks --item file://examples/jira.json
+    ```
 
 ## Tests
 To execute tests, run:
