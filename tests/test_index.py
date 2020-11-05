@@ -4,7 +4,7 @@ Lambda tests
 import unittest
 import os
 from mock import patch, ANY, Mock
-with patch.dict(os.environ, {'TABLE_NAME':'mytemp'}):
+with patch.dict(os.environ, {'TABLE_NAME':'mytemp', 'AWS_DEFAULT_REGION': 'eu-west-1'}):
     from lambdas import index
 
 
