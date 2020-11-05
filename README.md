@@ -2,7 +2,7 @@
 
 A solution for CodeBuild custom webhook notifications. Enables you to configure
 a list of HTTP endpoints which should be notified of CodeBuild state changes
-on a per CodeBuild project basis. 
+on a per CodeBuild project basis.
 
 [![Build Status](https://travis-ci.org/aws-samples/aws-codebuild-webhooks.svg?branch=master)](https://travis-ci.org/aws-samples/aws-codebuild-webhooks)
 
@@ -25,7 +25,7 @@ when deploying if required by supplying a different KMS Key ID.
 
 <details>
   <summary>More regions</summary>
-  
+
 |Region|Launch Template|
 |------|---------------|
 |**US West (N. California)** (us-west-1) | [![Launch the AWS CodeBuild Webhooks Stack with CloudFormation](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-1#/stacks/new?stackName=aws-codebuild-webhooks&templateURL=https://solution-builders-us-west-1.s3.us-west-1.amazonaws.com/aws-codebuild-webhooks/latest/main.template)|
@@ -48,7 +48,7 @@ CFN_BUCKET=your-temp-bucket
 virtualenv venv
 source venv/bin/activate
 pip install -r prod.txt -t lambdas/
-aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $CFN_BUCKET 
+aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $CFN_BUCKET
 aws cloudformation deploy \
   --stack-name codebuild-webhooks \
   --template-file packaged.yaml \
@@ -59,7 +59,7 @@ aws cloudformation deploy \
 To register a webhook, you need to create a new item in the CodeBuildWebhooks DDB table,
 created by this solution, with the following keys:
 
-- `project`: The name of the CodeBuild project for which your webhook should be invoked 
+- `project`: The name of the CodeBuild project for which your webhook should be invoked
 - `hook_url_param_name`: The name of the SSM parameter which contains the URL for your webhook. The
 param name must be prefixed with `/webhooks/`
 - `statuses`: The list of CodeBuild statuses which your webhook should respond to
@@ -67,7 +67,7 @@ param name must be prefixed with `/webhooks/`
 This should be a properly escaped JSON string. The `$PROJECT` and `$STATUS` placeholders can be used
 in your template which will be substituted at runtime. Additionally, any env vars on your CodeBuild
 job are available in your template by prefixing their name with `$`.
-- `hook_headers_param_name` (optional): The name of the SSM parameter which contains a 
+- `hook_headers_param_name` (optional): The name of the SSM parameter which contains a
 JSON string containing key/value pairs for custom headers for your webhooks. This can be used
 for things such as Authorization headers. The param name must be prefixed with `webhooks/`
 
@@ -87,7 +87,7 @@ for things such as Authorization headers. The param name must be prefixed with `
     aws dynamodb put-item --table-name CodeBuildWebhooks --item file://examples/slack_simple.json
      ```
 
-### Example 2: Creating a customised Slack channel webhook 
+### Example 2: Creating a customised Slack channel webhook
 The steps are the same as in [Example 1](#creating-a-simple-slack-channel-webhook) except you
 need to provide a custom template when registering the webhook in DDB. This example also makes use
 of Slack's flavour of markdown. Once you've substituted the relevant values in `examples/slack_custom.json`,

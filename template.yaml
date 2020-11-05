@@ -18,7 +18,7 @@ Resources:
     Properties:
       Handler: index.lambda_handler
       Runtime: python3.7
-      AutoPublishAlias: live 
+      AutoPublishAlias: live
       CodeUri: ./lambdas/
       Events:
         BuildEvent:
@@ -44,21 +44,21 @@ Resources:
 
   HooksTable:
     Type: AWS::DynamoDB::Table
-    Properties: 
+    Properties:
       TableName: CodeBuildWebhooks
       BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions: 
-        - 
+      AttributeDefinitions:
+        -
           AttributeName: "project"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "hook_url_param_name"
           AttributeType: "S"
-      KeySchema: 
-        - 
+      KeySchema:
+        -
           AttributeName: "project"
           KeyType: "HASH"
-        - 
+        -
           AttributeName: "hook_url_param_name"
           KeyType: "RANGE"
 
