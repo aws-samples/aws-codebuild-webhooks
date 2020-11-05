@@ -4,7 +4,7 @@ A solution for CodeBuild custom webhook notifications. Enables you to configure
 a list of HTTP endpoints which should be notified of CodeBuild state changes
 on a per CodeBuild project basis.
 
-[![Build Status](https://travis-ci.org/aws-samples/aws-codebuild-webhooks.svg?branch=master)](https://travis-ci.org/aws-samples/aws-codebuild-webhooks)
+![Tests](https://github.com/aws-samples/aws-codebuild-webhooks/workflows/Tests/badge.svg?branch=master)
 
 ## Deployment
 
