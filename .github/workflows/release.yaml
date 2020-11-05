@@ -45,4 +45,4 @@ jobs:
           body: |
             See the commits for a list of features included in this release
           draft: false
-          prerelease: true
+          prerelease: false
