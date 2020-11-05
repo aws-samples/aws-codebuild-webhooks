@@ -1,0 +1,46 @@
+---
+
+name: Release Version
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release:
+    name: Release Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/* || true
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      # Setup
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install python dependencies
+        run: pip3 install -r requirements.txt
+      # Release
+      - name: Setup versions in env variables
+        id: version
+        run: |
+          echo ::set-env name=LATEST_VERSION::$(git describe --tags $(git rev-list --tags --max-count=1) | sed s/^v// 2> /dev/null || echo '0')
+          echo ::set-env name=THIS_VERSION::v$((${LATEST_VERSION##*[^0-9]} + 1 ))
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          tag_name: v${{ env.THIS_VERSION }}
+          release_name: Release v${{ env.THIS_VERSION }}
+          body: |
+            See the commits for a list of features included in this release
+          draft: false
+          prerelease: true
