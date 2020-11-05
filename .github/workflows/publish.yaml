@@ -41,6 +41,8 @@ jobs:
       # Package and Upload Archive
       - name: Install Lambda dependencies
         run: pip install -r prod.txt -t lambdas/
+      - name: Zip artefact
+        run: zip -r $VERSION.zip lambdas/ template.yaml cfn-publish.config
       - name: Upload artefact
         run: aws s3 cp ./$VERSION.zip s3://$CFN_BUCKET/aws-codebuild-webhooks/$VERSION/aws-codebuild-webhooks.zip >/dev/null 2>&1
         env:
