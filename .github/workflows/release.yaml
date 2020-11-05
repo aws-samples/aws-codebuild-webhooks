@@ -31,7 +31,7 @@ jobs:
         id: version
         run: |
           echo ::set-env name=LATEST_VERSION::$(git describe --tags $(git rev-list --tags --max-count=1) | sed s/^v// 2> /dev/null || echo '0')
-          echo ::set-env name=THIS_VERSION::v$((${LATEST_VERSION##*[^0-9]} + 1 ))
+          echo ::set-env name=THIS_VERSION::$((${LATEST_VERSION##*[^0-9]} + 1 ))
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
