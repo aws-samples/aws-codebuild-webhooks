@@ -44,6 +44,8 @@ Resources:
 
   HooksTable:
     Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
     Properties:
       TableName: CodeBuildWebhooks
       BillingMode: PAY_PER_REQUEST
